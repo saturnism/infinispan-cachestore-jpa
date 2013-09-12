@@ -1,6 +1,6 @@
 package org.infinispan.loaders.jpa;
 
-import org.infinispan.loaders.CacheLoaderException;
+import org.infinispan.persistence.CacheLoaderException;
 
 /**
  * 

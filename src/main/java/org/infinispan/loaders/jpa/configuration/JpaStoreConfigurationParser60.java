@@ -3,15 +3,15 @@ package org.infinispan.loaders.jpa.configuration;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.infinispan.commons.util.StringPropertyReplacer;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ConfigurationParser;
 import org.infinispan.configuration.parsing.Namespace;
 import org.infinispan.configuration.parsing.Namespaces;
 import org.infinispan.configuration.parsing.ParseUtils;
-import org.infinispan.configuration.parsing.Parser53;
+import org.infinispan.configuration.parsing.Parser60;
 import org.infinispan.configuration.parsing.XMLExtendedStreamReader;
-import org.infinispan.commons.util.StringPropertyReplacer;
 
 /**
  *
@@ -19,12 +19,13 @@ import org.infinispan.commons.util.StringPropertyReplacer;
  *
  */
 @Namespaces({
-   @Namespace(uri = "urn:infinispan:config:jpa:5.3", root = "jpaStore"),
+   @Namespace(uri = "urn:infinispan:config:jpa:6.0", root = "jpaStore"),
+   @Namespace(root = "jpaStore")
 })
-public class JpaCacheStoreConfigurationParser53 implements
+public class JpaStoreConfigurationParser60 implements
 		ConfigurationParser {
 
-	public JpaCacheStoreConfigurationParser53() {
+	public JpaStoreConfigurationParser60() {
 	}
 
 	@Override
@@ -36,8 +37,8 @@ public class JpaCacheStoreConfigurationParser53 implements
 		case JPA_STORE: {
 			parseJpaCacheStore(
 					reader,
-					builder.loaders().addLoader(
-							JpaCacheStoreConfigurationBuilder.class));
+					builder.persistence().addStore(
+							JpaStoreConfigurationBuilder.class));
 			break;
 		}
 		default: {
@@ -47,14 +48,14 @@ public class JpaCacheStoreConfigurationParser53 implements
 	}
 
 	private void parseJpaCacheStore(XMLExtendedStreamReader reader,
-			JpaCacheStoreConfigurationBuilder builder)
+			JpaStoreConfigurationBuilder builder)
 			throws XMLStreamException {
 		for (int i = 0; i < reader.getAttributeCount(); i++) {
-			ParseUtils.requireNoNamespaceAttribute(reader, i);
-			String value = StringPropertyReplacer.replaceProperties(reader
-					.getAttributeValue(i));
-			Attribute attribute = Attribute.forName(reader
-					.getAttributeLocalName(i));
+		   ParseUtils.requireNoNamespaceAttribute(reader, i);
+         String attributeValue = reader.getAttributeValue(i);
+         String value = StringPropertyReplacer.replaceProperties(attributeValue);
+         String attrName = reader.getAttributeLocalName(i);
+         Attribute attribute = Attribute.forName(attrName);
 
 			switch (attribute) {
 			case ENTITY_CLASS_NAME: {
@@ -77,7 +78,7 @@ public class JpaCacheStoreConfigurationParser53 implements
 				break;
 			}
 			default: {
-                Parser53.parseCommonStoreAttributes(reader, i, builder);
+			   Parser60.parseCommonStoreAttributes(reader, builder, attrName, attributeValue, i);
 			}
 			}
 		}

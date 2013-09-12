@@ -1,10 +1,9 @@
 package org.infinispan.loaders.jpa;
 
-import org.hibernate.ejb.HibernateEntityManagerFactory;
-import org.infinispan.loaders.CacheStore;
+import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
+import org.infinispan.loaders.jpa.configuration.JpaStoreConfiguration;
+import org.infinispan.loaders.jpa.configuration.JpaStoreConfigurationBuilder;
 import org.infinispan.loaders.jpa.entity.User;
-import org.infinispan.manager.CacheContainer;
-import org.infinispan.test.TestingUtil;
 import org.testng.annotations.Test;
 
 /**
@@ -12,44 +11,26 @@ import org.testng.annotations.Test;
  * @author <a href="mailto:rtsang@redhat.com">Ray Tsang</a>
  *
  */
-@Test (groups = "functional", testName = "loaders.jdbc.binary.JpaCacheStoreEmfTest")
+@Test (groups = "functional", testName = "loaders.jpa.JpaCacheStoreUserEntityTest")
 public class JpaCacheStoreUserEntityTest extends BaseJpaCacheStoreTest {
+   @Override
+   protected JpaStoreConfiguration createCacheStoreConfig(PersistenceConfigurationBuilder lcb) {
+      
+      JpaStoreConfigurationBuilder cfg = new JpaStoreConfigurationBuilder(lcb);
+      
+      cfg.persistenceUnitName("org.infinispan.loaders.jpa");
+      cfg.entityClass(User.class);
+      
+      return cfg.create();
+   }
 
-	@Override
-	protected CacheStore createCacheStore() throws Exception {
-		JpaCacheStoreConfig config = new JpaCacheStoreConfig();
-
-		config.setPersistenceUnitName("org.infinispan.loaders.jpa");
-		config.setEntityClass(User.class);
-		config.setPurgeSynchronously(true);
-
-		JpaCacheStore store = new JpaCacheStore();
-		store.init(config, cm.getCache(), getMarshaller());
-		store.start();
-
-		assert store.getEntityManagerFactory() != null;
-		assert store.getEntityManagerFactory() instanceof HibernateEntityManagerFactory;
-
-		return store;
-	}
-
-	public void testSimple() throws Exception {
-		CacheContainer cm = null;
-		try {
-			assert cs.getCacheStoreConfig() instanceof JpaCacheStoreConfig;
-		} finally {
-			TestingUtil.killCacheManagers(cm);
-		}
-	}
-
-	@Override
-	protected TestObject createTestObject(String suffix) {
-		User user = new User();
-		user.setUsername("u_" + suffix);
-		user.setFirstName("fn_" + suffix);
-		user.setLastName("ln_" + suffix);
-		user.setNote("Some notes " + suffix);
-
-		return new TestObject(user.getUsername(), user);
-	}
+   @Override
+   protected TestObject createTestObject(String key, String value) {
+      User user = new User();
+      user.setUsername(key);
+      user.setFirstName("firstName-" + value);
+      user.setLastName("lastName-" + value);
+      user.setNote("note-" + value);
+      return new TestObject(user.getUsername(), user);
+   }
 }

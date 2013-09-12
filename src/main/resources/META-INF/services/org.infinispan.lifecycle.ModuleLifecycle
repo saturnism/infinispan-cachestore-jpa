@@ -1,1 +1,1 @@
-org.infinispan.loaders.jpa.JpaCacheStoreLifecycleManager
+org.infinispan.loaders.jpa.JpaStoreLifecycleManager
